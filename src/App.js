@@ -1,24 +1,30 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import { useState } from "react";
+import { Routes, Route } from "react-router-dom";
+import Dashboard from "./components/Dashboard";
+import SignIn from "./components/SignIn";
+import SignUp from "./components/SignUp";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+  const [token, setToken] = useState(() => {
+    const localData = localStorage.getItem("TOKENPORT");
+    if (localData === "undefined") {
+      return "";
+    } else {
+      return JSON.parse(localData);
+    }
+  });
+  return token ? (
+    <Routes>
+      <Route path="/" element={<Dashboard />} />
+      <Route path="/sign-in" element={<SignIn setToken={setToken} />} />
+    </Routes>
+  ) : (
+    <Routes>
+      <Route path="/" element={<SignIn setToken={setToken} />} />
+      <Route path="/sign-in" element={<SignIn setToken={setToken} />} />
+      <Route path="/sign-up" element={<SignUp />} />
+    </Routes>
   );
 }
 
