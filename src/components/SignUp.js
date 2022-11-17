@@ -14,11 +14,15 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import axios from "axios";
+import Alerts from "./Alerts";
 
 const theme = createTheme();
 
 export default function SignUp() {
   const navigate = useNavigate();
+  const [alert, setAlert] = useState();
+  const [showAlert, setShowAlert] = useState(false);
   const [pwdType, setPwdType] = useState("password");
   const [values, setValues] = useState({
     firstName: "",
@@ -26,24 +30,34 @@ export default function SignUp() {
     email: "",
     password: "",
   });
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     let newUser = {
       name: values.firstName + values.lastName,
       email: values.email,
       password: values.password,
       status: true,
-      created_at: new Date(),
     };
-    Swal.fire({
-      position: "top-end",
-      icon: "success",
-      title: "Congratulation!",
-      text: "Your account has been created!",
-      timer: 1500,
-    });
-    navigate("/sign-in");
-    console.table(newUser);
+    await axios
+      .post("http://localhost:7000/users", newUser)
+      .then((res) => {
+        if (res.data.status === "SUCCESS") {
+          Swal.fire({
+            position: "top-end",
+            icon: "success",
+            title: res.data.message,
+            text: "Your account has been created!",
+            timer: 2000,
+          });
+          navigate("/sign-in");
+        }
+      })
+      .catch((err) => {
+        if (err.response.data.status === "Error") {
+          setAlert(err.response.data.message);
+          setShowAlert(true);
+        }
+      });
   };
   const showPwd = () => {
     if (pwdType === "password") {
@@ -55,6 +69,12 @@ export default function SignUp() {
 
   return (
     <ThemeProvider theme={theme}>
+      <Alerts
+        showAlert={showAlert}
+        setShowAlert={setShowAlert}
+        alertMessage={alert}
+      />
+
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <Box
